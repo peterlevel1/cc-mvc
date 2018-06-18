@@ -1,0 +1,24 @@
+{
+  "name": "cc-mvc",
+  "version": "1.0.2",
+  "description": "for fe boys who still rely on jQuery, it is easy to use, and simpler than Backbone",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "./node_modules/.bin/babel src -d dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mvc",
+    "controller",
+    "model",
+    "view"
+  ],
+  "author": "cc",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-es2015-classes": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1"
+  }
+}
