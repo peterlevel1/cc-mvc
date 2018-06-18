@@ -1,11 +1,3 @@
-/**
- * for fe boys who still rely on jQuery,
- * it is easy to use, and simpler than Backbone
- *
- * @author CC
- * @since 2018-06-19
- */
-
 const rAF = window.requestAnimationFrame;
 const cAF = window.cancelAnimationFrame;
 
