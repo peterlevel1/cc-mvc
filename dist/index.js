@@ -21,4 +21,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.Controller = _Controller2.default;
 exports.View = _View2.default;
-exports.Model = _Model2.default;
+exports.Model = _Model2.default; /**
+                                  * for fe boys who still rely on jQuery,
+                                  * it is easy to use, and simpler than Backbone
+                                  *
+                                  * @author CC
+                                  * @since 2018-06-19
+                                  */

@@ -10,14 +10,6 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-/**
- * for fe boys who still rely on jQuery,
- * it is easy to use, and simpler than Backbone
- *
- * @author CC
- * @since 2018-06-19
- */
-
 var rAF = window.requestAnimationFrame;
 var cAF = window.cancelAnimationFrame;
 
