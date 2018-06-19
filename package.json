@@ -1,6 +1,6 @@
 {
   "name": "cc-mvc",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "for fe boys who still rely on jQuery, it is easy to use, and simpler than Backbone",
   "main": "dist/index.js",
   "scripts": {
@@ -12,7 +12,10 @@
     "mvc",
     "controller",
     "model",
-    "view"
+    "view",
+    "jquery",
+    "framework",
+    "jquery addons"
   ],
   "author": "cc",
   "license": "MIT",

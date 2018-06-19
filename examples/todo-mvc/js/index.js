@@ -1,276 +1,276 @@
 function setRouter(app) {
-	const router = new Router();
+  const router = new Router();
 
-	['all', 'active', 'completed'].forEach(function (hash) {
-		router.on(hash, function () {
-			app.setHash(hash);
-		});
-	});
+  ['all', 'active', 'completed'].forEach(function (hash) {
+    router.on(hash, function () {
+      app.setHash(hash);
+    });
+  });
 
-	router.configure({
-		notfound: function () {
-			window.location.hash = '';
-			app.setHash('all');
-		}
-	});
+  router.configure({
+    notfound: function () {
+      window.location.hash = '';
+      app.setHash('all');
+    }
+  });
 
-	router.init();
+  router.init();
 }
 
 function getStorage() {
-	const STORAGE_KEY = 'todos-cc-mvc';
+  const STORAGE_KEY = 'todos-cc-mvc';
 
-	return {
-		fetch: function () {
-			return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-		},
-		save: function (todos) {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-		}
-	};
+  return {
+    fetch: function () {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    },
+    save: function (todos) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+    }
+  };
 }
 
 function init() {
-	const { Controller } = MVC;
-	const storage = getStorage();
+  const { Controller } = MVC;
+  const storage = getStorage();
 
-	setRouter(new Controller({
-		init() {
-			this.view.el.on({
-				'view:add': ({ payload }) => {
-					this.save([ { id: Date.now() + '', editing: false, checked: false, value: payload }, ...this.getList() ]);
-				},
+  setRouter(new Controller({
+    init() {
+      this.view.el.on({
+        'view:add': ({ payload }) => {
+          this.save([ { id: Date.now() + '', editing: false, checked: false, value: payload }, ...this.getList() ]);
+        },
 
-				'view:toggleChecked': ({ payload }) => {
-					const { id, checked } = payload;
+        'view:toggleChecked': ({ payload }) => {
+          const { id, checked } = payload;
 
-					const list = this.getList();
-					const item = list.find(item => item.id === id);
+          const list = this.getList();
+          const item = list.find(item => item.id === id);
 
-					item.checked = checked;
-					this.save([ ...list ]);
-				},
+          item.checked = checked;
+          this.save([ ...list ]);
+        },
 
-				'view:toggleAllChecked': ({ payload }) => {
-					const { checked } = payload;
+        'view:toggleAllChecked': ({ payload }) => {
+          const { checked } = payload;
 
-					const list = this.getList();
-					list.forEach(item => { item.checked = checked; });
+          const list = this.getList();
+          list.forEach(item => { item.checked = checked; });
 
-					this.save([ ...list ]);
-				},
+          this.save([ ...list ]);
+        },
 
-				'view:clearItem': ({ payload }) => {
-					const { id } = payload;
+        'view:clearItem': ({ payload }) => {
+          const { id } = payload;
 
-					const list = storage.fetch().filter(item => item.id !== id);
+          const list = storage.fetch().filter(item => item.id !== id);
 
-					this.save(list);
-				},
+          this.save(list);
+        },
 
-				'view:clearCompleted': ({ payload }) => {
-					const list = storage.fetch().filter(item => {
-						return !item.checked;
-					});
+        'view:clearCompleted': ({ payload }) => {
+          const list = storage.fetch().filter(item => {
+            return !item.checked;
+          });
 
-					this.save(list);
-				},
+          this.save(list);
+        },
 
-				'view:startEditItem': ({ payload }) => {
-					const { id } = payload;
-					const list = this.getList();
-					const item = list.find(item => item.id === id);
-					item.editing = true;
+        'view:startEditItem': ({ payload }) => {
+          const { id } = payload;
+          const list = this.getList();
+          const item = list.find(item => item.id === id);
+          item.editing = true;
 
-					this.save([ ...list ]);
-				},
+          this.save([ ...list ]);
+        },
 
-				'view:stopEditItem': ({ payload }) => {
-					const { id, value } = payload;
-					const list = this.getList();
-					const item = list.find(item => item.id === id);
+        'view:stopEditItem': ({ payload }) => {
+          const { id, value } = payload;
+          const list = this.getList();
+          const item = list.find(item => item.id === id);
 
-					item.editing = false;
-					item.value = value;
+          item.editing = false;
+          item.value = value;
 
-					this.save([ ...list ]);
-				},
-			});
+          this.save([ ...list ]);
+        },
+      });
 
-			this.models.list.el = this.view.el.find('.todo-list');
-			this.models.list.countLeft = this.countLeft.bind(this);
+      this.models.list.el = this.view.el.find('.todo-list');
+      this.models.list.countLeft = this.countLeft.bind(this);
 
-			this.setHash(location.hash.replace(/^#\//, '') || 'all');
-		},
+      this.setHash(location.hash.replace(/^#\//, '') || 'all');
+    },
 
-		methods: {
-			filterList() {
-				return storage.fetch().filter(item => {
-					switch (this.hash) {
-						case 'all': return true;
-						case 'active': return !item.checked;
-						case 'completed': return !!item.checked;
-						default: throw new Error(`unknown hash: ${this.hash}`);
-					}
-				});
-			},
+    methods: {
+      filterList() {
+        return storage.fetch().filter(item => {
+          switch (this.hash) {
+            case 'all': return true;
+            case 'active': return !item.checked;
+            case 'completed': return !!item.checked;
+            default: throw new Error(`unknown hash: ${this.hash}`);
+          }
+        });
+      },
 
-			setList() {
-				this.models.list.v = this.filterList();
-			},
+      setList() {
+        this.models.list.v = this.filterList();
+      },
 
-			getList() {
-				return this.models.list.v;
-			},
+      getList() {
+        return this.models.list.v;
+      },
 
-			setHash(hash) {
-				if (hash === this.hash) return;
-				this.hash = hash;
-				this.setList();
+      setHash(hash) {
+        if (hash === this.hash) return;
+        this.hash = hash;
+        this.setList();
 
-				this.view.el.find('.filters a').each(function () {
-					$(this).toggleClass('selected', ($(this).attr('href').replace(/^#\//, '') || 'all') === hash);
-				});
-			},
+        this.view.el.find('.filters a').each(function () {
+          $(this).toggleClass('selected', ($(this).attr('href').replace(/^#\//, '') || 'all') === hash);
+        });
+      },
 
-			save(list) {
-				storage.save(list);
-				this.setList();
-			},
+      save(list) {
+        storage.save(list);
+        this.setList();
+      },
 
-			countLeft() {
-				const len = storage.fetch().filter(item => {
-					return !item.checked;
-				}).length;
+      countLeft() {
+        const len = storage.fetch().filter(item => {
+          return !item.checked;
+        }).length;
 
-				this.view.el.find('.todo-count').html(len + ' items left');
-			},
-		},
+        this.view.el.find('.todo-count').html(len + ' items left');
+      },
+    },
 
-		models: [
-			{
-				key: 'list',
-				render(list) {
-					const html = list.map(item => `
-						<li class="${item.editing ? 'editing' : ''} ${item.checked ? 'completed' : ''}" data-id="${item.id}">
-							<div class="view">
-								<input class="toggle" type="checkbox" ${item.checked ? 'checked' : ''}>
-								<label>${item.value}</label>
-								<button class="destroy"></button>
-							</div>
-							<input class="edit" type="text" value="${item.value}">
-						</li>
-					`).join('');
+    models: [
+      {
+        key: 'list',
+        render(list) {
+          const html = list.map(item => `
+            <li class="${item.editing ? 'editing' : ''} ${item.checked ? 'completed' : ''}" data-id="${item.id}">
+              <div class="view">
+                <input class="toggle" type="checkbox" ${item.checked ? 'checked' : ''}>
+                <label>${item.value}</label>
+                <button class="destroy"></button>
+              </div>
+              <input class="edit" type="text" value="${item.value}">
+            </li>
+          `).join('');
 
-					this.el.html(html);
+          this.el.html(html);
 
-					this.countLeft();
-				}
-			}
-		],
+          this.countLeft();
+        }
+      }
+    ],
 
-		view: {
-			selector: '.todoapp',
+    view: {
+      selector: '.todoapp',
 
-			events: {
-				'keyup .new-todo': 'keyup',
+      events: {
+        'keyup .new-todo': 'keyup',
 
-				'click .toggle': 'toggleChecked',
+        'click .toggle': 'toggleChecked',
 
-				'click .toggle-all': 'toggleAllChecked',
+        'click .toggle-all': 'toggleAllChecked',
 
-				'click .clear-completed': 'clearCompleted',
+        'click .clear-completed': 'clearCompleted',
 
-				'click .destroy': 'clearItem',
+        'click .destroy': 'clearItem',
 
-				'dblclick .view': 'startEditItem',
+        'dblclick .view': 'startEditItem',
 
-				'keyup .edit': 'stopEditItem',
-			},
+        'keyup .edit': 'stopEditItem',
+      },
 
-			methods: {
-				keyup(e) {
-					if (e.key === 'Enter') {
-						this.el.trigger({
-							type: 'view:add',
-							payload: e.target.value
-						});
+      methods: {
+        keyup(e) {
+          if (e.key === 'Enter') {
+            this.el.trigger({
+              type: 'view:add',
+              payload: e.target.value
+            });
 
-						$(e.target).val('');
-					}
-				},
+            $(e.target).val('');
+          }
+        },
 
-				toggleChecked(e) {
-					const id = $(e.target).closest('li').data('id') + '';
-					const checked = $(e.target).prop('checked');
+        toggleChecked(e) {
+          const id = $(e.target).closest('li').data('id') + '';
+          const checked = $(e.target).prop('checked');
 
-					this.el.trigger({
-						type: 'view:toggleChecked',
-						payload: {
-							id,
-							checked
-						}
-					});
-				},
+          this.el.trigger({
+            type: 'view:toggleChecked',
+            payload: {
+              id,
+              checked
+            }
+          });
+        },
 
-				toggleAllChecked(e) {
-					const checked = $(e.target).prop('checked');
+        toggleAllChecked(e) {
+          const checked = $(e.target).prop('checked');
 
-					this.el.trigger({
-						type: 'view:toggleAllChecked',
-						payload: {
-							checked
-						}
-					});
-				},
+          this.el.trigger({
+            type: 'view:toggleAllChecked',
+            payload: {
+              checked
+            }
+          });
+        },
 
-				clearCompleted(e) {
-					this.el.trigger({
-						type: 'view:clearCompleted',
-					});
-				},
+        clearCompleted(e) {
+          this.el.trigger({
+            type: 'view:clearCompleted',
+          });
+        },
 
-				clearItem(e) {
-					const id = $(e.target).closest('li').data('id') + '';
+        clearItem(e) {
+          const id = $(e.target).closest('li').data('id') + '';
 
-					this.el.trigger({
-						type: 'view:clearItem',
-						payload: {
-							id
-						}
-					});
-				},
+          this.el.trigger({
+            type: 'view:clearItem',
+            payload: {
+              id
+            }
+          });
+        },
 
-				startEditItem(e) {
-					const id = $(e.target).closest('li').data('id') + '';
+        startEditItem(e) {
+          const id = $(e.target).closest('li').data('id') + '';
 
-					this.el.trigger({
-						type: 'view:startEditItem',
-						payload: {
-							id
-						}
-					});
-				},
+          this.el.trigger({
+            type: 'view:startEditItem',
+            payload: {
+              id
+            }
+          });
+        },
 
-				stopEditItem(e) {
-					if (e.key !== 'Enter') {
-						return;
-					}
+        stopEditItem(e) {
+          if (e.key !== 'Enter') {
+            return;
+          }
 
-					const id = $(e.target).closest('li').data('id') + '';
+          const id = $(e.target).closest('li').data('id') + '';
 
-					this.el.trigger({
-						type: 'view:stopEditItem',
-						payload: {
-							id,
-							value: $(e.target).val()
-						}
-					});
-				}
+          this.el.trigger({
+            type: 'view:stopEditItem',
+            payload: {
+              id,
+              value: $(e.target).val()
+            }
+          });
+        }
 
-			}
-		}
-	}));
+      }
+    }
+  }));
 }
 
 init();
