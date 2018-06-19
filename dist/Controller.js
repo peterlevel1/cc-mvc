@@ -14,6 +14,8 @@ var _Model = require('./Model');
 
 var _Model2 = _interopRequireDefault(_Model);
 
+var _util = require('./util');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -33,7 +35,11 @@ var Controller = function () {
 	_createClass(Controller, [{
 		key: 'init',
 		value: function init(props) {
+			var methods = props.methods;
+
+
 			this.props = props;
+			(0, _util.mixProps)(this, methods);
 
 			this.setView();
 			this.setModels();
@@ -68,6 +74,8 @@ var Controller = function () {
 
 					memo[model.k] = model;
 					model.setController(_this);
+
+					return memo;
 				}, {});
 				return;
 			}

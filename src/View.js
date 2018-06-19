@@ -1,3 +1,5 @@
+import { mixProps } from './util';
+
 /**
  * view -> controller -> models
  */
@@ -12,27 +14,12 @@ export default class View {
 		const { selector, methods } = props;
 
 		this.el = $(selector);
-		this.setMethods(methods);
+		mixProps(this, methods);
 
 		this.props = props;
 
 		if (props.init) {
 			props.init.call(this);
-		}
-	}
-
-	setMethods(methods) {
-		if (!methods) {
-			return;
-		}
-
-		for (const method in methods) {
-			if (methods.hasOwnProperty(method)) {
-				if (this[method]) {
-					console.warn(`method: ${method} is alreay exists`);
-				}
-				this[method] = methods[method];
-			}
 		}
 	}
 
@@ -42,8 +29,12 @@ export default class View {
 
 	// 'click {sel}': 'onClick' | Function
 	setEvents() {
-		const keys = Object.keys(this.props.events);
 		this.el.off();
+
+		if (!this.props.events) {
+			return;
+		}
+		const keys = Object.keys(this.props.events);
 
 		keys.forEach(key => {
 			const arr = key.split(/ +/);

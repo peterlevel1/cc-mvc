@@ -1,5 +1,6 @@
 import View from './View';
 import Model from './Model';
+import { mixProps } from './util';
 
 /**
  * 1 controller, 1 view, and many models
@@ -13,7 +14,10 @@ export default class Controller {
 	}
 
 	init(props) {
+		const { methods } = props;
+
 		this.props = props;
+		mixProps(this, methods);
 
 		this.setView();
 		this.setModels();
@@ -42,6 +46,8 @@ export default class Controller {
 
 				memo[model.k] = model;
 				model.setController(this);
+
+				return memo;
 			}, {});
 			return;
 		}

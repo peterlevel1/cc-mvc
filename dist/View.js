@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _util = require('./util');
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
@@ -28,28 +30,12 @@ var View = function () {
 
 
 			this.el = $(selector);
-			this.setMethods(methods);
+			(0, _util.mixProps)(this, methods);
 
 			this.props = props;
 
 			if (props.init) {
 				props.init.call(this);
-			}
-		}
-	}, {
-		key: 'setMethods',
-		value: function setMethods(methods) {
-			if (!methods) {
-				return;
-			}
-
-			for (var method in methods) {
-				if (methods.hasOwnProperty(method)) {
-					if (this[method]) {
-						console.warn('method: ' + method + ' is alreay exists');
-					}
-					this[method] = methods[method];
-				}
 			}
 		}
 	}, {
@@ -65,8 +51,12 @@ var View = function () {
 		value: function setEvents() {
 			var _this = this;
 
-			var keys = Object.keys(this.props.events);
 			this.el.off();
+
+			if (!this.props.events) {
+				return;
+			}
+			var keys = Object.keys(this.props.events);
 
 			keys.forEach(function (key) {
 				var arr = key.split(/ +/);
