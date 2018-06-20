@@ -6,72 +6,72 @@ const cAF = window.cancelAnimationFrame;
  */
 export default class Model {
 
-	constructor(props) {
-		this.init(props);
-	}
+  constructor(props) {
+    this.init(props);
+  }
 
-	init(props) {
-		const { key, value } = props;
-		this.key = key;
-		this.value = value;
-		this.props = props;
+  init(props) {
+    const { key, value } = props;
+    this.key = key;
+    this.value = value;
+    this.props = props;
 
-		if (props.init) {
-			props.init.call(this);
-		}
-	}
+    if (props.init) {
+      props.init.call(this);
+    }
+  }
 
-	setController(controller) {
-		this.controller = controller;
-	}
+  setController(controller) {
+    this.controller = controller;
+  }
 
-	get v() {
-		return this.value;
-	}
+  get v() {
+    return this.value;
+  }
 
-	set v(value) {
-		this._render(value);
-	}
+  set v(value) {
+    this._render(value);
+  }
 
-	_render(value) {
-		;(this._stack || (this._stack = [])).push(value);
+  _render(value) {
+    ;(this._stack || (this._stack = [])).push(value);
 
-		if (this._timer) {
-			return;
-		}
+    if (this._timer) {
+      return;
+    }
 
-		this._timer = rAF(() => {
-			const value = this._stack.pop();
+    this._timer = rAF(() => {
+      const value = this._stack.pop();
 
-			if (this.props.valueWillChange && this.props.valueWillChange.call(this, value) === false) {
-				return;
-			}
+      if (this.props.valueWillChange && this.props.valueWillChange.call(this, value) === false) {
+        return;
+      }
 
-			this.props.render.call(this, value);
+      this.props.render.call(this, value);
 
-			const prevValue = this.value;
-			this.value = value;
+      const prevValue = this.value;
+      this.value = value;
 
-			if (this.props.afterValueChange) {
-				this.props.afterValueChange.call(this, prevValue);
-			}
+      if (this.props.afterValueChange) {
+        this.props.afterValueChange.call(this, prevValue);
+      }
 
-			this._stack = null;
+      this._stack = null;
 
-			cAF(this._timer);
-			this._timer = null;
-		});
-	}
+      cAF(this._timer);
+      this._timer = null;
+    });
+  }
 
-	get k() {
-		return this.key;
-	}
+  get k() {
+    return this.key;
+  }
 
-	destroy() {
-		this.key = null;
-		this.value = null;
-		this.props = null;
-		this.controller = null;
-		// TODO: keys -> = null
-	}
+  destroy() {
+    this.key = null;
+    this.value = null;
+    this.props = null;
+    this.controller = null;
+    // TODO: keys -> = null
+  }
 }

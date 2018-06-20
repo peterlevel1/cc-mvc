@@ -9,113 +9,113 @@ import { mixProps } from './util';
  */
 export default class Controller {
 
-	constructor(props) {
-		this.init(props);
-	}
+  constructor(props) {
+    this.init(props);
+  }
 
-	init(props) {
-		const { methods } = props;
+  init(props) {
+    const { methods } = props;
 
-		this.state = {};
-		this.props = props;
-		mixProps(this, methods);
+    this.state = {};
+    this.props = props;
+    mixProps(this, methods);
 
-		this.setView();
-		this.setModels();
+    this.setView();
+    this.setModels();
 
-		if (props.init) {
-			props.init.call(this);
-		}
-	}
+    if (props.init) {
+      props.init.call(this);
+    }
+  }
 
-	setModels() {
-		const { models } = this.props;
+  setModels() {
+    const { models } = this.props;
 
-		if (!models) {
-			return;
-		}
+    if (!models) {
+      return;
+    }
 
-		this.models = models.reduce((memo, model) => {
-			if (!(model instanceof Model)) {
-				model = new Model(model);
-			}
+    this.models = models.reduce((memo, model) => {
+      if (!(model instanceof Model)) {
+        model = new Model(model);
+      }
 
-			if (memo.hasOwnProperty(model.k)) {
-				throw new Error(`model key: ${model.k()} => repeated`);
-			}
+      if (memo.hasOwnProperty(model.k)) {
+        throw new Error(`model key: ${model.k()} => repeated`);
+      }
 
-			memo[model.k] = model;
-			model.setController(this);
+      memo[model.k] = model;
+      model.setController(this);
 
-			if (this.state.hasOwnProperty(model.k)) {
-				throw new Error(`state key: ${model.k}, already exsits`);
-			}
+      if (this.state.hasOwnProperty(model.k)) {
+        throw new Error(`state key: ${model.k}, already exsits`);
+      }
 
-			Object.defineProperty(this.state, model.k, {
-			  get() {
-			    return model.v;
-			  },
-			  set(value) {
-			    model.v = value;
-			  },
-			  enumerable: true,
-			  configurable: true
-			});
+      Object.defineProperty(this.state, model.k, {
+        get() {
+          return model.v;
+        },
+        set(value) {
+          model.v = value;
+        },
+        enumerable: true,
+        configurable: true
+      });
 
-			return memo;
-		}, {});
-	}
+      return memo;
+    }, {});
+  }
 
-	setView() {
-		let { view } = this.props;
+  setView() {
+    let { view } = this.props;
 
-		if (!view) {
-			return;
-		}
+    if (!view) {
+      return;
+    }
 
-		if (!(view instanceof View)) {
-			view = new View(view);
-		}
+    if (!(view instanceof View)) {
+      view = new View(view);
+    }
 
-		this.view = view;
-		view.setController(this);
+    this.view = view;
+    view.setController(this);
 
-		view.setEvents();
-	}
+    view.setEvents();
+  }
 
-	m(key) {
-		if (this.model) {
-			return this.model;
-		}
+  m(key) {
+    if (this.model) {
+      return this.model;
+    }
 
-		return this.models[key];
-	}
+    return this.models[key];
+  }
 
-	eachModel(cb) {
-		if (this.model) {
-			cb(this.model);
-			return;
-		}
+  eachModel(cb) {
+    if (this.model) {
+      cb(this.model);
+      return;
+    }
 
-		const keys = Object.keys(this.models);
-		let key;
+    const keys = Object.keys(this.models);
+    let key;
 
-		while (key = keys.shift()) {
-			if (cb(this.m(key)) === false) {
-				break;
-			}
-		}
-	}
+    while (key = keys.shift()) {
+      if (cb(this.m(key)) === false) {
+        break;
+      }
+    }
+  }
 
-	destroy() {
-		this.eachModel((m) => m.destroy());
-		this.models = null;
-		this.model = null;
+  destroy() {
+    this.eachModel((m) => m.destroy());
+    this.models = null;
+    this.model = null;
 
-		this.view.destroy();
-		this.view = null;
+    this.view.destroy();
+    this.view = null;
 
-		this.props = null;
-		// TODO: keys -> = null
-	}
+    this.props = null;
+    // TODO: keys -> = null
+  }
 }
