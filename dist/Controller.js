@@ -38,6 +38,7 @@ var Controller = function () {
 			var methods = props.methods;
 
 
+			this.state = {};
 			this.props = props;
 			(0, _util.mixProps)(this, methods);
 
@@ -53,45 +54,53 @@ var Controller = function () {
 		value: function setModels() {
 			var _this = this;
 
-			var _props = this.props,
-			    models = _props.models,
-			    model = _props.model;
+			var models = this.props.models;
 
 
-			this.models = {};
-			this.model = null;
-
-			if (models) {
-				// this.models is object
-				this.models = models.reduce(function (memo, model) {
-					if (!(model instanceof _Model2.default)) {
-						model = new _Model2.default(model);
-					}
-
-					if (memo[model.k]) {
-						throw new Error('model key: ' + model.k() + ' => repeated');
-					}
-
-					memo[model.k] = model;
-					model.setController(_this);
-
-					return memo;
-				}, {});
+			if (!models) {
 				return;
 			}
 
-			if (!(model instanceof _Model2.default)) {
-				model = new _Model2.default(model);
-			}
+			this.models = models.reduce(function (memo, model) {
+				if (!(model instanceof _Model2.default)) {
+					model = new _Model2.default(model);
+				}
 
-			this.model = model;
-			model.setController(this);
+				if (memo[model.k]) {
+					throw new Error('model key: ' + model.k() + ' => repeated');
+				}
+
+				memo[model.k] = model;
+				model.setController(_this);
+
+				if (_this.state.hasOwnProperty(model.k)) {
+					throw new Error('state key: ' + model.k + ', already exsits');
+				}
+
+				Object.defineProperty(_this.state, model.k, {
+					get: function get() {
+						return model.v;
+					},
+					set: function set(value) {
+						model.v = value;
+					},
+
+					enumerable: true,
+					configurable: true
+				});
+
+				return memo;
+			}, {});
 		}
 	}, {
 		key: 'setView',
 		value: function setView() {
 			var view = this.props.view;
 
+
+			if (!view) {
+				return;
+			}
 
 			if (!(view instanceof _View2.default)) {
 				view = new _View2.default(view);

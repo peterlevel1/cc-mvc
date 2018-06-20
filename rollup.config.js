@@ -5,7 +5,7 @@ export default {
   output: {
     file: 'cc-mvc.js',
     format: 'umd',
-    name: 'MVC',
+    name: 'cc',
     globals: '$'
   },
   plugins: [

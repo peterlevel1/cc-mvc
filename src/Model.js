@@ -30,39 +30,33 @@ export default class Model {
 	}
 
 	set v(value) {
-		if (value === this.value) {
-			return;
-		}
-
-		if (this.valueWillChange && this.valueWillChange(value) === false) {
-			return;
-		}
-
-		// TODO: debounce render
-		this._render(this.props.render, value);
-
-		const prevValue = this.value;
-		this.value = value;
-
-		if (this.afterValueChange) {
-			this.afterValueChange(prevValue);
-		}
+		this._render(value);
 	}
 
-	_render(cb, value) {
-		;(this._cbs || (this._cbs = [])).push([cb, value]);
+	_render(value) {
+		;(this._stack || (this._stack = [])).push(value);
 
 		if (this._timer) {
 			return;
 		}
 
 		this._timer = rAF(() => {
-			const lastOne = this._cbs.pop();
-			const [cb, value] = lastOne;
+			const value = this._stack.pop();
 
-			cb.call(this, value);
+			if (this.props.valueWillChange && this.props.valueWillChange.call(this, value) === false) {
+				return;
+			}
 
-			this._cbs = null;
+			this.props.render.call(this, value);
+
+			const prevValue = this.value;
+			this.value = value;
+
+			if (this.props.afterValueChange) {
+				this.props.afterValueChange.call(this, prevValue);
+			}
+
+			this._stack = null;
 
 			cAF(this._timer);
 			this._timer = null;

@@ -16,6 +16,7 @@ export default class Controller {
 	init(props) {
 		const { methods } = props;
 
+		this.state = {};
 		this.props = props;
 		mixProps(this, methods);
 
@@ -28,40 +29,49 @@ export default class Controller {
 	}
 
 	setModels() {
-		let { models, model } = this.props;
+		const { models } = this.props;
 
-		this.models = {};
-		this.model = null;
-
-		if (models) {
-			// this.models is object
-			this.models = models.reduce((memo, model) => {
-				if (!(model instanceof Model)) {
-					model = new Model(model);
-				}
-
-				if (memo[model.k]) {
-					throw new Error(`model key: ${model.k()} => repeated`);
-				}
-
-				memo[model.k] = model;
-				model.setController(this);
-
-				return memo;
-			}, {});
+		if (!models) {
 			return;
 		}
 
-		if (!(model instanceof Model)) {
-			model = new Model(model);
-		}
+		this.models = models.reduce((memo, model) => {
+			if (!(model instanceof Model)) {
+				model = new Model(model);
+			}
 
-		this.model = model;
-		model.setController(this);
+			if (memo[model.k]) {
+				throw new Error(`model key: ${model.k()} => repeated`);
+			}
+
+			memo[model.k] = model;
+			model.setController(this);
+
+			if (this.state.hasOwnProperty(model.k)) {
+				throw new Error(`state key: ${model.k}, already exsits`);
+			}
+
+			Object.defineProperty(this.state, model.k, {
+			  get() {
+			    return model.v;
+			  },
+			  set(value) {
+			    model.v = value;
+			  },
+			  enumerable: true,
+			  configurable: true
+			});
+
+			return memo;
+		}, {});
 	}
 
 	setView() {
 		let { view } = this.props;
+
+		if (!view) {
+			return;
+		}
 
 		if (!(view instanceof View)) {
 			view = new View(view);

@@ -1,7 +1,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.MVC = {})));
+	(factory((global.cc = {})));
 }(this, (function (exports) { 'use strict';
 
 	function mixProps(inst, props) {
@@ -151,39 +151,33 @@
 		}
 
 		set v(value) {
-			if (value === this.value) {
-				return;
-			}
-
-			if (this.valueWillChange && this.valueWillChange(value) === false) {
-				return;
-			}
-
-			// TODO: debounce render
-			this._render(this.props.render, value);
-
-			const prevValue = this.value;
-			this.value = value;
-
-			if (this.afterValueChange) {
-				this.afterValueChange(prevValue);
-			}
+			this._render(value);
 		}
 
-		_render(cb, value) {
-	(this._cbs || (this._cbs = [])).push([cb, value]);
+		_render(value) {
+	(this._stack || (this._stack = [])).push(value);
 
 			if (this._timer) {
 				return;
 			}
 
 			this._timer = rAF(() => {
-				const lastOne = this._cbs.pop();
-				const [cb, value] = lastOne;
+				const value = this._stack.pop();
 
-				cb.call(this, value);
+				if (this.props.valueWillChange && this.props.valueWillChange.call(this, value) === false) {
+					return;
+				}
 
-				this._cbs = null;
+				this.props.render.call(this, value);
+
+				const prevValue = this.value;
+				this.value = value;
+
+				if (this.props.afterValueChange) {
+					this.props.afterValueChange.call(this, prevValue);
+				}
+
+				this._stack = null;
 
 				cAF(this._timer);
 				this._timer = null;
@@ -217,6 +211,7 @@
 		init(props) {
 			const { methods } = props;
 
+			this.state = {};
 			this.props = props;
 			mixProps(this, methods);
 
@@ -229,40 +224,49 @@
 		}
 
 		setModels() {
-			let { models, model } = this.props;
+			const { models } = this.props;
 
-			this.models = {};
-			this.model = null;
-
-			if (models) {
-				// this.models is object
-				this.models = models.reduce((memo, model) => {
-					if (!(model instanceof Model)) {
-						model = new Model(model);
-					}
-
-					if (memo[model.k]) {
-						throw new Error(`model key: ${model.k()} => repeated`);
-					}
-
-					memo[model.k] = model;
-					model.setController(this);
-
-					return memo;
-				}, {});
+			if (!models) {
 				return;
 			}
 
-			if (!(model instanceof Model)) {
-				model = new Model(model);
-			}
+			this.models = models.reduce((memo, model) => {
+				if (!(model instanceof Model)) {
+					model = new Model(model);
+				}
 
-			this.model = model;
-			model.setController(this);
+				if (memo[model.k]) {
+					throw new Error(`model key: ${model.k()} => repeated`);
+				}
+
+				memo[model.k] = model;
+				model.setController(this);
+
+				if (this.state.hasOwnProperty(model.k)) {
+					throw new Error(`state key: ${model.k}, already exsits`);
+				}
+
+				Object.defineProperty(this.state, model.k, {
+				  get() {
+				    return model.v;
+				  },
+				  set(value) {
+				    model.v = value;
+				  },
+				  enumerable: true,
+				  configurable: true
+				});
+
+				return memo;
+			}, {});
 		}
 
 		setView() {
 			let { view } = this.props;
+
+			if (!view) {
+				return;
+			}
 
 			if (!(view instanceof View)) {
 				view = new View(view);

@@ -31,40 +31,33 @@ function getStorage() {
 }
 
 function init() {
-  const { Controller } = MVC;
+  const { Controller } = cc;
   const storage = getStorage();
 
   setRouter(new Controller({
     init() {
       this.view.el.on({
         'view:add': ({ payload }) => {
-          this.save([ { id: Date.now() + '', editing: false, checked: false, value: payload }, ...this.getList() ]);
+          this.save([ { id: Date.now() + '', editing: false, checked: false, value: payload }, ...this.state.list ]);
         },
 
         'view:toggleChecked': ({ payload }) => {
           const { id, checked } = payload;
-
-          const list = this.getList();
-          const item = list.find(item => item.id === id);
+          const item = this.state.list.find(item => item.id === id);
 
           item.checked = checked;
-          this.save([ ...list ]);
+          this.save([ ...this.state.list ]);
         },
 
         'view:toggleAllChecked': ({ payload }) => {
           const { checked } = payload;
-
-          const list = this.getList();
-          list.forEach(item => { item.checked = checked; });
-
-          this.save([ ...list ]);
+          this.state.list.forEach(item => { item.checked = checked; });
+          this.save([ ...this.state.list ]);
         },
 
         'view:clearItem': ({ payload }) => {
           const { id } = payload;
-
           const list = storage.fetch().filter(item => item.id !== id);
-
           this.save(list);
         },
 
@@ -72,28 +65,25 @@ function init() {
           const list = storage.fetch().filter(item => {
             return !item.checked;
           });
-
           this.save(list);
         },
 
         'view:startEditItem': ({ payload }) => {
           const { id } = payload;
-          const list = this.getList();
-          const item = list.find(item => item.id === id);
-          item.editing = true;
+          const item = this.state.list.find(item => item.id === id);
 
-          this.save([ ...list ]);
+          item.editing = true;
+          this.save([ ...this.state.list ]);
         },
 
         'view:stopEditItem': ({ payload }) => {
           const { id, value } = payload;
-          const list = this.getList();
-          const item = list.find(item => item.id === id);
+          const item = this.state.list.find(item => item.id === id);
 
           item.editing = false;
           item.value = value;
 
-          this.save([ ...list ]);
+          this.save([ ...this.state.list ]);
         },
       });
 
@@ -116,11 +106,7 @@ function init() {
       },
 
       setList() {
-        this.models.list.v = this.filterList();
-      },
-
-      getList() {
-        return this.models.list.v;
+        this.state.list = this.filterList();
       },
 
       setHash(hash) {
@@ -163,7 +149,8 @@ function init() {
           `).join('');
 
           this.el.html(html);
-
+        },
+        afterValueChange(prevValue) {
           this.countLeft();
         }
       }

@@ -1,11 +1,12 @@
 {
   "name": "cc-mvc",
-  "version": "1.0.5",
-  "description": "for fe boys who still rely on jQuery, it is easy to use, and simpler than Backbone",
+  "version": "1.0.6",
+  "description": "for fe boys who still rely on jQuery",
   "main": "dist/index.js",
   "scripts": {
-    "build": "./node_modules/.bin/babel src -d dist",
+    "build:cmd": "./node_modules/.bin/babel src -d dist",
     "build:fe": "./node_modules/.bin/rollup -c rollup.config.js",
+    "build": "npm run build:cmd && npm run build:fe",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
