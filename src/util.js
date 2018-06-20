@@ -1,3 +1,13 @@
+const OBJ = Object;
+
+export function isObject(obj) {
+  return obj && obj.constructor === OBJ;
+}
+
+export function isArray(obj) {
+  return Array.isArray(obj);
+}
+
 export function mixProps(inst, props) {
 	if (!props) {
 		return;

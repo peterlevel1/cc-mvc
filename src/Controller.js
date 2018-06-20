@@ -40,7 +40,7 @@ export default class Controller {
 				model = new Model(model);
 			}
 
-			if (memo[model.k]) {
+			if (memo.hasOwnProperty(model.k)) {
 				throw new Error(`model key: ${model.k()} => repeated`);
 			}
 

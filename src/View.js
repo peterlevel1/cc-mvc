@@ -27,7 +27,7 @@ export default class View {
 		this.controller = controller;
 	}
 
-	// 'click {sel}': 'onClick' | Function
+	// 'click {sel}': 'onClick' | func | arr
 	setEvents() {
 		this.el.off();
 
