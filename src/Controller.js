@@ -84,10 +84,6 @@ export default class Controller {
   }
 
   m(key) {
-    if (this.model) {
-      return this.model;
-    }
-
     return this.models[key];
   }
 
